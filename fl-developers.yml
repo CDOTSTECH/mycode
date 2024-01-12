@@ -1,0 +1,28 @@
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: fl-developers-role
+  namespace: myapp-dev
+rules:
+- apiGroups: 
+  - ""
+  resources:
+  - "*"
+  verbs: 
+  - get
+  - watch
+  - list
+
+##################
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: fl-developers-rb
+roleRef:
+  apiGroup: ""
+  kind: ClusterRole
+  name: fl-developers-role
+subjects:
+- kind: Group
+  namespace: myapp-dev
+  name: DATASERVICES_DEVELOPERS
