@@ -1,0 +1,20 @@
+#  Codeowners
+#  The product development team and/or team members should only be added to the TFVARS list below so they can approve and merge changes to the tfvars
+#  See the following page for more details, https://docs.gitlab.com/ee/user/project/code_owners.html
+############ Default owners ####################
+# This line below is sets the owners for all files. Only <default_group> members should be in this line
+* @<default_group>
+
+############ TFVARS files #####################
+# Development teams and/or team members should be added to the next line only
+*.tfvars @TERRAFORM/myrepo @<default_group>
+
+############# CODEOWNERS file ###################
+# The line below determines who can modify the CODEOWNERS file. 
+# No other members besides <default_group> should be added to this line
+CODEOWNERS @<default_group>
+
+
+############# custom waf rule groups terraform code folder ###################
+# Owned by <department_name>and changes must follow a <department_name>review/approval process
+<folder>/ @user1 @user2 @use3
