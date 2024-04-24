@@ -1,0 +1,13 @@
+#) A Cloud Guru - Get Cloud Certified (pluralsight.com)
+Course:  Microsoft Azure Fundamentals (AZ-900): Foundational Cloud Concepts
+Course:  AZ-104 Microsoft Azure Administrator Certification Prep
+
+#) https://www.certificationcamps.com/
+Official Microsoft Certification & Training Boot Camps (certificationcamps.com)
+Course:  MCE Microsoft Azure Solutions Architect + MCA Microsoft Azure Admin ACCELERATED COMBO Training & Certification Boot Camp (AZ-104 and AZ-305)
+
+#) https://learn.microsoft.com/en-us/training/courses/az-104t00
+Course AZ-104T00-A: Microsoft Azure Administrator - Training | Microsoft Learn
+
+#) https://crackcerts.com/
+CrackCerts - Latest practice exams. 100% pass guarantee.
