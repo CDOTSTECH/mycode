@@ -1,0 +1,25 @@
+index=azure sourcetype="azure:monitor" resource_type="ADF"
+| spath input=properties
+| eval pipelineName=spath(properties, "PipelineName"), status=spath(properties, "Status"), runId=spath(properties, "RunId"), runStart=spath(properties, "RunStart"), runEnd=spath(properties, "RunEnd")
+| table _time, pipelineName, status, runId, runStart, runEnd
+
+--> Pipeline Status Overview (Pie Chart):
+
+index=azure sourcetype="azure:monitor" resource_type="ADF"
+| spath
+| stats count by status
+
+--> Pipeline Run Duration Over Time (Timechart):
+index=azure sourcetype="azure:monitor" resource_type="ADF"
+| spath
+| eval duration = strptime(properties.RunEnd, "%Y-%m-%dT%H:%M:%S.%3NZ") - strptime(properties.RunStart, "%Y-%m-%dT%H:%M:%S.%3NZ")
+| timechart avg(duration) by pipelineName
+
+--> Failed Pipelines (Table):
+
+index=azure sourcetype="azure:monitor" resource_type="ADF"
+| spath
+| search status="Failed"
+| table pipelineName, runId, runStart, runEnd, errorMessage
+
+
