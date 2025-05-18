@@ -1,3 +1,13 @@
+index="azure_monitor_logs" ResourceType="MICROSOFT.DATAFACORY/FACTORIES/PIPELINES/RUNS" OperationName="Microsoft.DataFactory/factories/pipelines/runs/Succeeded"
+| rex field=_raw "RunStart\":\"(?<RunStart>[^\"]+)"
+| rex field=_raw "RunEnd\":\"(?<RunEnd>[^\"]+)"
+| eval RunStart = strptime(RunStart,"%Y-%m-%dT%H:%M:%SZ")
+| eval RunEnd = strptime(RunEnd,"%Y-%m-%dT%H:%M:%SZ")
+| eval duration_seconds = (RunEnd - RunStart)
+| eval duration_minutes = round(duration_seconds/60,2)
+| table RunId, PipelineName, RunStart, RunEnd, duration_minutes
+
+
 index=azure sourcetype="azure:monitor" resource_type="ADF"
 | spath input=properties
 | eval pipelineName=spath(properties, "PipelineName"), status=spath(properties, "Status"), runId=spath(properties, "RunId"), runStart=spath(properties, "RunStart"), runEnd=spath(properties, "RunEnd")
