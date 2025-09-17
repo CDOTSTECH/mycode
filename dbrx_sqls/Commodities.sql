@@ -1,0 +1,35 @@
+CREATE OR REPLACE TABLE commodities_flat AS
+SELECT
+  TemplateVersion,
+  Header.AssetClass,
+  Header.InstrumentType,
+  Header.UseCase,
+  Header.Level,
+  Identifier.UPI,
+  Identifier.Status,
+  Identifier.StatusReason,
+  Identifier.LastUpdateDateTime,
+  Derived.ClassificationType,
+  Derived.ShortName,
+  Derived.UnderlierName,
+  Derived.UnderlyingAssetType,
+  Derived.CFIDeliveryType,
+  cfi.Version AS CFI_Version,
+  cfi.VersionStatus AS CFI_VersionStatus,
+  cfi.Value AS CFI_Value,
+  cfi.Category.Code AS CFI_Category_Code,
+  cfi.Category.Value AS CFI_Category_Value,
+  cfi.Group.Code AS CFI_Group_Code,
+  cfi.Group.Value AS CFI_Group_Value,
+  attr.Name AS CFI_Attribute_Name,
+  attr.Code AS CFI_Attribute_Code,
+  attr.Value AS CFI_Attribute_Value,
+  Attributes.ReferenceRate,
+  Attributes.OtherReferenceRate,
+  Attributes.BaseProduct,
+  Attributes.OtherBaseProduct,
+  Attributes.ReturnorPayoutTrigger,
+  Attributes.DeliveryType
+FROM commodities_raw
+LATERAL VIEW explode(Derived.CFI) cfiTable AS cfi
+LATERAL VIEW explode(cfi.Attributes) attrTable AS attr;
