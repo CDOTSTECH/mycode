@@ -1,0 +1,15 @@
+
+Thank you for providing the JSON sample. Here’s how you can flatten this JSON and create a table in Databricks using SQL:
+
+1. Upload the JSON file to DBFS
+First, upload your Commodities-20250913.json file to DBFS (Databricks File System), e.g., to /FileStore/tables/Commodities-20250913.json.
+
+2. Create a Table from the JSON File
+3. Flatten the JSON Structure
+Here’s a sample SQL query to flatten your JSON structure. This assumes each row is a JSON object as in your sample:
+
+Notes:
+This query uses LATERAL VIEW explode() to flatten the arrays (CFI and its Attributes).
+Adjust the file path if your file is in a different location.
+If your JSON file contains an array of objects at the root, you may need to use from_json or inline functions.
+Let me know if you need a Databricks notebook version or further customization!
