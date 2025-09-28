@@ -1,0 +1,8 @@
+file,records_analyzed,top_level_fields,asset_classes,instrument_types,use_cases
+Other-20250920.json,500,"TemplateVersion, Header, Identifier, Derived, Attributes",Other,"Swap, Other, Option",Non_Standard
+Commodities-20250920.json,500,"TemplateVersion, Header, Identifier, Derived, Attributes",Commodities,Swap,"Basis_Swap, Single_Index, Multi_Exotic_Swap"
+Other-20250913.json,500,"TemplateVersion, Header, Identifier, Derived, Attributes",Other,"Swap, Other, Option",Non_Standard
+Foreign_Exchange-20250920.json,500,"TemplateVersion, Header, Identifier, Derived, Attributes",Foreign_Exchange,"Forward, Swap, Option","Forward, FX_Swap, NDF, Non_Deliverable_FX_Swap, Vanilla_Option, Non_Standard, Spreadbet, Digital_Option, Vol_Var, Barrier_Option, Forward_Vol_Agreement, Rolling_Spot, Target_Option, Contract_For_Difference, NDO"
+Credit-20250920.json,500,"TemplateVersion, Header, Identifier, Derived, Attributes",Credit,Swap,Index
+Rates-20250920.json,500,"TemplateVersion, Header, Identifier, Derived, Attributes",Rates,Swap,"Basis, Inflation_Fixed_Float_Zero_Coupon, Cross_Currency_Basis, Fixed_Float, Fixed_Float_OIS, Cross_Currency_Fixed_Float, Cross_Currency_Fixed_Float_NDS"
+Equity-20250920.json,500,"TemplateVersion, Header, Identifier, Derived, Attributes",Equity,"Forward, Option, Swap","Non_Standard, Price_Return_Basic_Performance_Single_Index, Basket, Price_Return_Basic_Performance_Single_Index_CFD, Price_Return_Basic_Performance_Basket, Single_Index, Price_Return_Basic_Performance_Basket_CFD, Parameter_Return_Dividend_Basket, Parameter_Return_Variance_Basket, Portfolio_Swap, Parameter_Return_Dividend_Single_Index, Parameter_Return_Volatility_Basket, Parameter_Return_Variance_Single_Index"
