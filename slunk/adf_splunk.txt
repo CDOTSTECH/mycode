@@ -1,0 +1,124 @@
+1) Pipeline run status & duration (last 24h)
+index=azure adf sourcetype=azure:monitor:diagnostic category=PipelineRuns earliest=-24h
+| spath
+| eval start=_time, end=coalesce(strptime(end, "%Y-%m-%dT%H:%M:%S.%3N%Z"), _time)
+| eval duration_s = round((end - start),2)
+| stats count as runs
+       sum(case(status="Succeeded",1,0)) as succeeded
+       sum(case(status="Failed",1,0)) as failed
+       sum(case(status="Cancelled",1,0)) as cancelled
+       avg(duration_s) as avg_duration_s
+       p95(duration_s) as p95_duration_s
+       by pipelineName
+| sort - failed - p95_duration_s
+
+2) Activity failures with top errors (last 24h)
+
+index=azure adf sourcetype=azure:monitor:diagnostic category=ActivityRuns earliest=-24h status=Failed
+| spath
+| rex field=error "(?<errorCode>code[^,:\}]+)"
+| rex field=error "(?i)message[\"']?\s*:\s*[\""
+| eval errorKey=coalesce(errorCode, substr(errorMsg,1,120))
+| stats count as failures by pipelineName activityName activityType errorKey
+| sort - failures
+
+3) End-to-end pipeline → activity correlation for a failed runId
+| makeresults
+| eval runId="PUT-YOUR-RUNID"
+| map search="
+    search index=azure adf sourcetype=azure:monitor:diagnostic category=ActivityRuns runId=$runId$
+    | spath
+    | table _time pipelineName runId activityName activityType status durationInMs error
+    | sort _time
+"
+
+
+4) Failure rate over time (pipeline-level timechart)
+index=azure adf sourcetype=azure:monitor:diagnostic category=PipelineRuns earliest=-7d
+| spath
+| timechart span=1h count as total
+          sum(eval(status="Failed")) as failed
+          sum(eval(status="Succeeded")) as succeeded
+          by pipelineName limit=10
+
+If you prefer an overall failure rate:
+
+index=azure adf sourcetype=azure:monitor:diagnostic category=PipelineRuns earliest=-7d
+| spath
+| timechart span=1h count as total, sum(eval(status="Failed")) as failed
+| eval failure_rate_pct=round(100*failed/total,2)
+
+5) SLA watch: pipelines exceeding a threshold (e.g., 30 minutes)
+index=azure adf sourcetype=azure:monitor:diagnostic category=PipelineRuns earliest=-24h
+| spath
+| eval start=_time, end=coalesce(strptime(end, "%Y-%m-%dT%H:%M:%S.%3N%Z"), _time)
+| eval duration_min = (end - start)/60
+| where duration_min > 30
+| table _time pipelineName runId status duration_min
+| sort - duration_min
+
+6) Copy activity throughput & volume (top N)
+index=azure adf sourcetype=azure:monitor:diagnostic category=ActivityRuns earliest=-24h activityType=Copy
+| spath
+| eval mbWritten = dataWritten/1024/1024
+| stats sum(mbWritten) as MB_written
+       avg(throughput) as avg_MBps
+       count as copies
+       by pipelineName activityName
+| sort - MB_written
+
+Per hour:
+index=azure adf sourcetype=azure:monitor:diagnostic category=ActivityRuns earliest=-24h activityType=Copy
+| spath
+| eval mbWritten = dataWritten/1024/1024
+| timechart span=1h sum(mbWritten) as MB_written avg(throughput) as avg_MBps
+
+7) Triggers: success/failure and latency from schedule to start
+index=azure adf sourcetype=azure:monitor:diagnostic category=TriggerRuns earliest=-7d
+| spath
+| eval sched=strptime(scheduledTime,"%Y-%m-%dT%H:%M:%S.%3N%Z")
+| eval latency_s = _time - sched
+| stats count as runs
+       sum(eval(status="Failed")) as failed
+       avg(latency_s) as avg_latency_s
+       p95(latency_s) as p95_latency_s
+       by triggerName triggerType
+| sort - failed - p95_latency_s
+
+8) “Stuck” or long-running activities (no terminal status)
+index=azure adf sourcetype=azure:monitor:diagnostic category=ActivityRuns earliest=-2d
+| spath
+| search NOT status IN ("Succeeded","Failed","Cancelled")
+| eval age_min = (now() - _time)/60
+| where age_min > 30
+| table _time pipelineName activityName activityType status age_min runId
+| sort - age_min
+
+9) Top failing activity types
+index=azure adf sourcetype=azure:monitor:diagnostic category=ActivityRuns earliest=-30d status=Failed
+| spath
+| stats count as failures by activityType
+| sort - failures
+``
+
+10) Parameter-based breakdown (e.g., by environment or dataset)
+index=azure adf sourcetype=azure:monitor:diagnostic category=PipelineRuns earliest=-7d
+| spath
+| eval env=coalesce('parameters{}.env','parameters.env','env')
+| stats count by env, pipelineName, status
+| sort env pipelineName
+``
+
+11) Integration Runtime (Self-hosted) health/usage
+index=azure adf sourcetype=azure:monitor:diagnostic category=IntegrationRuntimeMetrics earliest=-24h
+| spath
+| timechart span=5m avg(CPU) as cpu_pct avg(Memory) as mem_pct avg(QueueLength) as queue
+
+12) End-to-end pipeline Gantt (simple)
+index=azure adf sourcetype=azure:monitor:diagnostic category=ActivityRuns earliest=-24h
+| spath
+| eval start=_time, finish=coalesce(strptime(end,"%Y-%m-%dT%H:%M:%S.%3N%Z"), _time)
+| eval duration=finish-start
+| where duration>0
+| table pipelineName activityName start finish duration
+``
