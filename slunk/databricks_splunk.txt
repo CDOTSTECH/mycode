@@ -1,0 +1,56 @@
+✅ 1. Databricks Job Run Monitoring
+A) Last 24h job failures
+index=databricks sourcetype=databricks:audit actionName="runFailed" earliest=-24h
+| stats count values(userIdentity.email) as failed_by values(requestParams.job_id) as job_ids by workspaceId
+
+B) Job duration trends
+index=databricks sourcetype=databricks:audit actionName="runSucceeded"
+| eval duration_sec = requestParams.run_duration_ms/1000
+| timechart span=1h avg(duration_sec) as avg_run_time p95(duration_sec)
+
+✅ 3. Workspace / Notebook Activity
+A) Notebook operations (edit, delete, run)
+index=databricks sourcetype=databricks:audit actionName="workspaceFileAction"
+| stats count by userIdentity.email requestParams.action requestParams.path
+
+B) Notebook run failures
+index=databricks sourcetype=databricks:audit actionName="notebookFailed"
+| table _time userIdentity.email requestParams.path errorMessage
+
+
+✅ 4. Unity Catalog (Permissions, Access, Lineage)
+A) Permission changes
+index=databricks sourcetype=databricks:audit actionName="permissionsUpdate"
+| table _time userIdentity.email requestParams.objectId requestParams.changes
+
+B) Unauthorized access attempts
+index=databricks sourcetype=databricks:audit actionName="authorizationDenied"
+| stats count values(requestParams.objectId) by userIdentity.email
+
+✅ 5. Databricks SQL Warehouse Monitoring
+
+A) Slow queries (p95 duration)
+index=databricks sourcetype=databricks:sql eventType="queryEnd"
+| eval duration_sec = executionDurationMs/1000
+| stats p95(duration_sec) avg(duration_sec) count by queryText
+| sort - p95
+
+B) SQL Warehouse load
+index=databricks sourcetype=databricks:sql eventType="queryStart"
+| timechart span=15m count as concurrent_queries
+
+✅ 6. Security & Audit Surveillance
+A) Login failures
+
+index=databricks sourcetype=databricks:audit actionName="loginFailed"
+| stats count by userIdentity.email clientIpAddress
+
+B) Privilege escalations
+index=databricks sourcetype=databricks:audit actionName="groupMembershipAdded"
+| table _time userIdentity.email requestParams.groupName requestParams.user
+
+C) High-risk access (tables/schemas)
+index=databricks sourcetype=databricks:audit actionName="dataAccess"
+| search requestParams.objectId IN ("gold.*","pii.*","prod.*")
+| stats count by userIdentity.email requestParams.objectId
+
